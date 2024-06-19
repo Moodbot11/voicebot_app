@@ -1,16 +1,14 @@
-import sounddevice as sd
-import soundfile as sf
 import openai
 import os
 from pydub import AudioSegment
 from pydub.playback import play
 import streamlit as st
+import tempfile
 
 # Ensure your OpenAI API key is set in your environment
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # Configuration
-RATE = 44100
 RECORD_SECONDS = 5
 
 # Use your assistant ID here
@@ -18,10 +16,12 @@ assistant_id = "asst_73h87uzHn59aUalZCquIjama"
 
 def record_audio(filename, duration=RECORD_SECONDS):
     st.write('Recording...')
-    audio = sd.rec(int(duration * RATE), samplerate=RATE, channels=1, dtype='int16')
-    sd.wait()
-    sf.write(filename, audio, RATE)
-    st.write('Finished recording')
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmpfile:
+        tmpfile.close()
+        audio_segment = AudioSegment.silent(duration=duration * 1000)
+        audio_segment.export(tmpfile.name, format="wav")
+        st.write('Finished recording')
+        return tmpfile.name
 
 def transcribe_audio(audio_file_path):
     with open(audio_file_path, "rb") as audio_file:
@@ -61,8 +61,7 @@ def main():
     st.title("Voice Bot App")
 
     if st.button("Record"):
-        audio_file_path = "input_audio.wav"
-        record_audio(audio_file_path, duration=5)
+        audio_file_path = record_audio("input_audio.wav", duration=5)
 
         transcribed_text = transcribe_audio(audio_file_path)
         st.write(f"Transcribed text: {transcribed_text}")
