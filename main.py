@@ -5,6 +5,7 @@ import wave
 from pydub import AudioSegment
 from pydub.playback import play
 import streamlit as st
+import tempfile
 
 # Ensure your OpenAI API key is set in your environment
 openai.api_key = os.getenv('OPENAI_API_KEY')
@@ -51,7 +52,7 @@ def transcribe_audio(audio_file_path):
 
 def generate_response(transcribed_text):
     response = openai.ChatCompletion.create(
-        model="gpt-4",
+        model="gpt-4-0613",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": transcribed_text}
@@ -79,7 +80,7 @@ def main():
     st.title("Voice Bot App")
 
     if st.button("Record"):
-        audio_file_path = "input_audio.wav"
+        audio_file_path = tempfile.NamedTemporaryFile(delete=False, suffix=".wav").name
         record_audio(audio_file_path, duration=5)
 
         transcribed_text = transcribe_audio(audio_file_path)
