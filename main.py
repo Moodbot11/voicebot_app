@@ -1,51 +1,27 @@
-import streamlit as st
-import pyaudio
-import wave
+import sounddevice as sd
+import soundfile as sf
 import openai
 import os
-import numpy as np
 from pydub import AudioSegment
 from pydub.playback import play
-from typing_extensions import override
-from openai import OpenAI
+import streamlit as st
 
 # Ensure your OpenAI API key is set in your environment
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 # Configuration
-CHUNK = 1024
-FORMAT = pyaudio.paInt16
-CHANNELS = 1
 RATE = 44100
 RECORD_SECONDS = 5
 
 # Use your assistant ID here
 assistant_id = "asst_73h87uzHn59aUalZCquIjama"
 
-# Initialize PyAudio
-p = pyaudio.PyAudio()
-
 def record_audio(filename, duration=RECORD_SECONDS):
-    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
-    frames = []
-
     st.write('Recording...')
-    for _ in range(0, int(RATE / CHUNK * duration)):
-        data = stream.read(CHUNK)
-        frames.append(data)
-
-    stream.stop_stream()
-    stream.close()
-    p.terminate()
-
+    audio = sd.rec(int(duration * RATE), samplerate=RATE, channels=1, dtype='int16')
+    sd.wait()
+    sf.write(filename, audio, RATE)
     st.write('Finished recording')
-
-    wf = wave.open(filename, 'wb')
-    wf.setnchannels(CHANNELS)
-    wf.setsampwidth(p.get_sample_size(FORMAT))
-    wf.setframerate(RATE)
-    wf.writeframes(b''.join(frames))
-    wf.close()
 
 def transcribe_audio(audio_file_path):
     with open(audio_file_path, "rb") as audio_file:
