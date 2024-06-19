@@ -1,0 +1,5 @@
+streamlit
+pyaudio
+numpy
+openai
+pydub
