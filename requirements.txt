@@ -1,5 +1,5 @@
 streamlit
-pyaudio
 numpy
 openai
 pydub
+https://github.com/intxcc/pyaudio_portaudio/releases/download/v0.2.11/PyAudio-0.2.11-cp39-cp39-manylinux1_x86_64.whl
